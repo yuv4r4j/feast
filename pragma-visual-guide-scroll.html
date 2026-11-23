@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRAGMA Visual Guide (scroll)</title>
+<style>
+/* Layout idea: narrative steps scroll on the left while one pinned graphic on the right changes with each step.
+   Single light theme by choice, so the file looks the same wherever it is opened. Works offline: no external files. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff; --surface: #ffffff; --ink: #162033; --muted: #586579; --line: #d3dae5; --wash: #f4f6fa;
+  --accent: #2a55d9;
+  --profile: #8a3fa8; --event: #2a55d9; --history: #0c8072; --time: #a85f00;
+  --profile-soft: #f1e4f6; --event-soft: #e3eafc; --history-soft: #dff1ee; --time-soft: #fbeed6;
+  --ok: #1c7445; --warn: #9a5b00; --diff: #b0352a;
+  --body: "Avenir Next", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+code { font-family: var(--mono); font-size: .88em; background: var(--wash); padding: 1px 4px; border-radius: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.hero { max-width: 880px; margin: 0 auto; padding: 72px 24px 40px; }
+.kicker { font-family: var(--mono); font-size: 12.5px; color: var(--muted); letter-spacing: .04em; }
+h1 { font-size: clamp(32px, 5.4vw, 54px); line-height: 1.06; margin: 12px 0 18px; letter-spacing: -.02em; text-wrap: balance; }
+.lede { font-size: 20px; color: var(--ink); max-width: 62ch; margin: 0 0 14px; }
+.hint { color: var(--muted); font-size: 15px; }
+
+nav.chapters { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.94); border-bottom: 1px solid var(--line); }
+nav.chapters div { max-width: 1320px; margin: 0 auto; padding: 8px 24px; display: flex; gap: 4px; overflow-x: auto; }
+nav.chapters a { flex: none; font-size: 13.5px; text-decoration: none; color: var(--muted); padding: 4px 10px; border-radius: 999px; }
+nav.chapters a.on { background: var(--ink); color: #fff; }
+nav.chapters a b { font-family: var(--mono); font-weight: 500; margin-right: 5px; }
+
+.scrolly { max-width: 1320px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: minmax(280px, 34%) 1fr; gap: 40px; }
+.steps { padding: 20vh 0 30vh; grid-column: 1; grid-row: 1; }
+.stage-wrap { grid-column: 2; grid-row: 1; }
+.chapter { font-family: var(--mono); font-size: 12.5px; color: var(--accent); letter-spacing: .05em; text-transform: uppercase; margin: 0 0 8px; scroll-margin-top: 60px; }
+.step { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; opacity: .28; transition: opacity .35s; }
+.step.is-active { opacity: 1; }
+.step h2 { font-size: 25px; line-height: 1.2; margin: 0 0 10px; text-wrap: balance; }
+.step p { margin: 0 0 10px; max-width: 44ch; }
+.stage-wrap { position: sticky; top: 46px; height: calc(100vh - 46px); display: flex; align-items: center; justify-content: center; }
+.stage { position: relative; width: 800px; height: 580px; flex: none; transform-origin: center center; }
+.scene { position: absolute; inset: 0; opacity: 0; transition: opacity .45s; pointer-events: none; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.scene-a #sc-a, .scene-b #sc-b, .scene-c #sc-c, .scene-d #sc-d, .scene-p #sc-p, .scene-e #sc-e, .scene-f #sc-f, .scene-g #sc-g, .scene-h #sc-h, .scene-i #sc-i { opacity: 1; }
+.cap { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.fade { opacity: 0; transition: opacity .45s, transform .45s; transform: translateY(8px); }
+
+@media (max-width: 900px) {
+  .scrolly { display: block; padding: 0; }
+  .stage-wrap { top: 44px; height: 46vh; background: #fff; border-bottom: 1px solid var(--line); z-index: 10; overflow: hidden; }
+  .steps { padding: 6vh 20px 30vh; }
+  .step { min-height: 62vh; justify-content: flex-start; padding-top: 4vh; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* SVG classes shared by the drawings */
+svg { display: block; width: 100%; height: auto; color: var(--muted); }
+svg text { font-family: var(--body); font-size: 12px; fill: var(--ink); }
+svg .m { font-family: var(--mono); font-size: 11px; }
+svg .sm { font-size: 10.5px; } svg .mu { fill: var(--muted); } svg .b { font-weight: 600; }
+svg .tp { fill: var(--profile); } svg .te { fill: var(--event); } svg .th { fill: var(--history); } svg .tt { fill: var(--time); }
+svg .ln { stroke: var(--muted); stroke-width: 1.2; fill: none; } svg .dash { stroke-dasharray: 4 4; }
+svg .bx { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+svg .bp { fill: var(--profile-soft); stroke: var(--profile); stroke-width: 1.2; }
+svg .be { fill: var(--event-soft); stroke: var(--event); stroke-width: 1.2; }
+svg .be2 { fill: #bccbf6; stroke: var(--event); stroke-width: 1.2; }
+svg .bh { fill: var(--history-soft); stroke: var(--history); stroke-width: 1.2; }
+svg .bt { fill: var(--time-soft); stroke: var(--time); stroke-width: 1.2; }
+svg .pad { fill: #eceff4; stroke: var(--line); stroke-width: 1; }
+svg .hl { fill: rgba(42,85,217,.06); stroke: var(--accent); stroke-width: 3; opacity: 0; transition: opacity .4s; }
+
+/* chips */
+.chip { display: inline-block; font-family: var(--mono); font-size: 12.5px; padding: 2px 8px; border-radius: 5px; border: 1px solid var(--line); margin: 2px 4px 2px 0; white-space: nowrap; background: #fff; }
+.chip.k { border-color: var(--profile); color: var(--profile); background: var(--profile-soft); }
+.chip.v { border-color: var(--event); color: var(--event); background: var(--event-soft); }
+.chip.t { border-color: var(--time); color: var(--time); background: var(--time-soft); }
+.chip sub { font-size: 9.5px; color: var(--muted); margin-left: 4px; vertical-align: baseline; }
+
+/* scene a: big table */
+.big { border-collapse: collapse; font: 10px/1.3 var(--mono); width: 100%; }
+.big th, .big td { border: 1px solid var(--line); padding: 6px 4px; text-align: left; vertical-align: top; white-space: nowrap; transition: background .4s, opacity .4s; }
+.big td:nth-child(2), .big td:nth-child(7) { white-space: normal; }
+.big th { font-weight: 600; background: var(--wash); }
+.scene-a.ge-2 .ev { background: var(--event-soft); }
+.scene-a.ge-3 .cu { background: var(--profile-soft); }
+.scene-a.ge-4 .out { background: var(--time-soft); }
+.scene-a.ge-4 .drop { opacity: .32; text-decoration: line-through; }
+.lgs { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; min-height: 28px; }
+.lg { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); }
+.scene-a.ge-2 .lg-ev, .scene-a.ge-3 .lg-cu, .scene-a.ge-4 .lg-out, .scene-a.ge-4 .lg-drop { opacity: 1; transform: none; }
+
+/* scene b: files */
+.file { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+.file h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--mono); font-weight: 600; }
+.file h4 small { font-family: var(--body); font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 13px; }
+.file.ev { border-top: 4px solid var(--event); } .file.pr { border-top: 4px solid var(--profile); } .file.lb { border-top: 4px solid var(--time); }
+.mini { border-collapse: collapse; font: 11.5px/1.35 var(--mono); width: 100%; }
+.mini th, .mini td { border-top: 1px solid var(--line); padding: 5px 8px 5px 0; text-align: left; vertical-align: top; }
+.mini th { border-top: 0; color: var(--muted); font-weight: 500; }
+.pair { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; }
+.flow { display: flex; align-items: center; gap: 10px; font-size: 14px; flex-wrap: wrap; }
+.flow span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; background: var(--wash); }
+.scene-b.ge-1 .f1, .scene-b.ge-2 .f2, .scene-b.ge-3 .f3, .scene-b.ge-4 .f4 { opacity: 1; transform: none; }
+
+/* scene c: tokens */
+.trow { display: grid; grid-template-columns: 118px 150px 1fr 200px; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.trow .raw { font-family: var(--mono); font-size: 12.5px; }
+.trow .kind { color: var(--muted); font-size: 12.5px; }
+.trow .vt, .trow .kind { opacity: 0; transition: opacity .45s; }
+.scene-c.ge-2 .vt, .scene-c.ge-2 .kind { opacity: 1; }
+.t-time { opacity: .2; transition: opacity .45s; }
+.scene-c.ge-3 .t-time { opacity: 1; }
+.scene-c.ge-3 .t-time .vt, .scene-c.ge-3 .t-time .kind { opacity: 1; }
+.scene-c.ge-3 .ruler { opacity: 1; transform: none; }
+
+/* scene d: model */
+.scene-d.at-1 .hl-1, .scene-d.at-2 .hl-2, .scene-d.at-3 .hl-3, .scene-d.at-4 .hl-4 { opacity: 1; }
+.sizes { border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }
+.sizes th, .sizes td { text-align: left; padding: 5px 10px 5px 0; border-top: 1px solid var(--line); }
+.sizes th { color: var(--muted); font-weight: 500; font-family: var(--mono); font-size: 11.5px; border-top: 0; }
+.sizes td { font-family: var(--mono); font-size: 12.5px; }
+.scene-d.ge-4 .sizes-wrap { opacity: 1; transform: none; }
+
+/* scene p: packing */
+.scene-p .packed { opacity: 0; transition: opacity .5s; }
+.scene-p.ge-2 .packed { opacity: 1; }
+.scene-p.ge-2 .facts { opacity: 1; transform: none; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13.5px; }
+.facts span { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--wash); }
+.facts b { font-family: var(--mono); font-weight: 600; }
+
+/* scene e: masking */
+.mask { display: grid; gap: 6px; }
+.mrow { display: flex; gap: 5px; align-items: stretch; }
+.mrow .lab { flex: 0 0 62px; font-family: var(--mono); font-size: 11px; color: var(--muted); align-self: center; }
+.mt { font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: 5px; padding: 3px 7px; line-height: 1.3; min-width: 72px; background: #fff; transition: background .35s, border-color .35s, color .35s; }
+.mt i { display: block; font-style: normal; font-size: 9.5px; color: var(--muted); }
+.mt .msk { display: none; }
+.scene-e.ge-1 .k-tok .val, .scene-e.ge-2 .k-evt .val, .scene-e.ge-3 .k-key .val, .scene-e.ge-4 .k-unk .val { display: none; }
+.scene-e.ge-1 .k-tok .msk, .scene-e.ge-2 .k-evt .msk, .scene-e.ge-3 .k-key .msk, .scene-e.ge-4 .k-unk .msk { display: inline; }
+.scene-e.ge-1 .k-tok { border-color: var(--event); background: var(--event-soft); color: var(--event); }
+.scene-e.ge-2 .k-evt { border-color: var(--history); background: var(--history-soft); color: var(--history); }
+.scene-e.ge-3 .k-key { border-color: var(--profile); background: var(--profile-soft); color: var(--profile); }
+.scene-e.ge-4 .k-unk { border-style: dashed; border-color: var(--muted); color: var(--muted); }
+.mleg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; min-height: 24px; }
+.mleg span { display: inline-flex; align-items: center; gap: 6px; }
+.scene-e.ge-1 .ml1, .scene-e.ge-2 .ml2, .scene-e.ge-3 .ml3, .scene-e.ge-4 .ml4, .scene-e.ge-4 .mlm { opacity: 1; transform: none; }
+
+/* scene f: using it */
+.cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fff; transition: opacity .4s, border-color .4s, box-shadow .4s; }
+.card h4 { margin: 0 0 4px; font-size: 15px; }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.scene-f.at-1 .c-lora, .scene-f.at-2 .c-probe { opacity: .35; }
+.scene-f.at-1 .c-probe, .scene-f.at-2 .c-lora { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(42,85,217,.18); }
+.res { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.res th { text-align: left; font: 500 11px var(--mono); color: var(--muted); padding: 2px 8px 4px; }
+.res td { padding: 2.5px 8px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.res td.n { font-family: var(--mono); font-size: 12px; width: 20%; background: linear-gradient(90deg, #bfe3dc calc(var(--v) * 1%), transparent 0); }
+.res td.neg { color: var(--diff); background: none; }
+.res td.t { color: var(--muted); font-size: 12px; }
+.scene-f.ge-3 .resw { opacity: 1; transform: none; }
+.aml { border: 1px solid var(--diff); border-left-width: 5px; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; background: #fdf3f1; }
+.aml b { color: var(--diff); }
+
+/* scene g: fidelity */
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.fcol { border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; transition: opacity .4s; }
+.fcol h4 { margin: 0 0 6px; font-size: 14.5px; }
+.fcol ul { margin: 0; padding: 0; list-style: none; }
+.fcol li { font-size: 12.5px; padding: 4.5px 0; border-top: 1px solid var(--line); line-height: 1.35; }
+.fcol.ok { border-top-color: var(--ok); } .fcol.ok h4 { color: var(--ok); }
+.fcol.warn { border-top-color: var(--warn); } .fcol.warn h4 { color: var(--warn); }
+.fcol.diff { border-top-color: var(--diff); } .fcol.diff h4 { color: var(--diff); }
+.scene-g.at-1 .warn, .scene-g.at-1 .diff, .scene-g.at-2 .ok, .scene-g.at-2 .diff, .scene-g.at-3 .ok, .scene-g.at-3 .warn { opacity: .28; }
+.verdict { border-left: 5px solid var(--accent); background: var(--wash); border-radius: 0 10px 10px 0; padding: 10px 14px; font-size: 13.5px; }
+.verdict b { display: block; font-size: 17px; margin-bottom: 2px; }
+.scene-g.ge-4 .verdict { opacity: 1; transform: none; }
+
+/* scene h: pipeline */
+.scene-h.at-1 .hl-1, .scene-h.at-2 .hl-2, .scene-h.at-3 .hl-3 { opacity: 1; }
+.gaps { border-collapse: collapse; width: 100%; }
+.gaps td { font-size: 12.5px; padding: 5px 10px 5px 0; border-top: 1px solid var(--line); vertical-align: top; line-height: 1.35; }
+.gaps td:first-child { font-weight: 600; width: 23%; white-space: nowrap; }
+.scene-h.ge-4 .gapsw { opacity: 1; transform: none; }
+
+/* scene i: rollout */
+.stages { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.stg { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fff; opacity: .18; transition: opacity .4s, border-color .4s, box-shadow .4s; }
+.stg .s { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
+.stg h4 { margin: 2px 0 4px; font-size: 15.5px; }
+.stg p { margin: 0 0 6px; font-size: 13px; }
+.stg .exit { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin: 0; }
+.stg .exit b { color: var(--ink); }
+.scene-i.ge-1 .g1, .scene-i.ge-2 .g2, .scene-i.ge-3 .g3, .scene-i.ge-4 .g4 { opacity: 1; }
+.scene-i.at-1 .g1, .scene-i.at-2 .g2, .scene-i.at-3 .g3, .scene-i.at-4 .g4 { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(42,85,217,.18); }
+
+footer { max-width: 880px; margin: 0 auto; padding: 20px 24px 80px; }
+footer h3 { font-size: 19px; margin: 0 0 10px; }
+dl.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0 28px; margin: 0 0 28px; }
+dl.gloss div { padding: 9px 0; border-top: 1px solid var(--line); }
+dl.gloss dt { font-family: var(--mono); font-size: 13.5px; color: var(--accent); }
+dl.gloss dd { margin: 2px 0 0; font-size: 14.5px; }
+.src { font-size: 14px; color: var(--muted); }
+
+.scene-a.at-1 .hl-1, .scene-a.at-2 .hl-2, .scene-a.at-3 .hl-3, .scene-a.at-4 .hl-4 { opacity: 1; }
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; }
+.tile b { display: block; font-size: 21px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 12px; color: var(--muted); line-height: 1.3; display: block; }
+.scene-a.ge-4 .tiles { opacity: 1; transform: none; }
+.card ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
+.card li { margin-bottom: 3px; }
+.card .note { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.scene-p.ge-3 .runw { opacity: 1; transform: none; }
+.finds { display: none; }
+.scene-f.ge-4 .resw { display: none; }
+.scene-f.ge-4 .finds { display: block; }
+.finds li { font-size: 14px; margin-bottom: 8px; }
+.scene-f.ge-5 .aml { opacity: 1; transform: none; }
+.scene-h.ge-4 svg { display: none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">PRAGMA paper v2 (24 Aug 2026) · pragmatiq 1.1.0 (commit eb6928c)</div>
+  <h1>PRAGMA, drawn: how the model works, what pragmatiq implements, and what an enterprise build needs</h1>
+  <p class="lede">PRAGMA is Revolut's foundation model for banking event histories. pragmatiq is an open-source project that says it follows the paper faithfully. This guide walks through the model in pictures, checks that claim against the paper and the pragmatiq source, then lays out what is still yours to build.</p>
+  <p class="hint">Scroll down. The picture on the right changes with each paragraph.</p>
+</header>
+
+<nav class="chapters" aria-label="Chapters"><div>
+  <a href="#ch1" data-ch="1"><b>1</b>The idea</a>
+  <a href="#ch2" data-ch="2"><b>2</b>Tokens and time</a>
+  <a href="#ch3" data-ch="3"><b>3</b>Three encoders</a>
+  <a href="#ch4" data-ch="4"><b>4</b>Pre-training</a>
+  <a href="#ch5" data-ch="5"><b>5</b>Scale plumbing</a>
+  <a href="#ch6" data-ch="6"><b>6</b>Using it</a>
+  <a href="#ch7" data-ch="7"><b>7</b>Fidelity check</a>
+  <a href="#ch8" data-ch="8"><b>8</b>Enterprise build</a>
+  <a href="#ch9" data-ch="9"><b>9</b>Rollout</a>
+</div></nav>
+
+<div class="scrolly">
+<div class="stage-wrap"><div class="stage scene-a at-1 ge-1" id="stage">
+
+  <!-- scene a -->
+  <div class="scene" id="sc-a">
+    <svg viewBox="0 0 1040 300" role="img" aria-label="A customer's timeline of events and a profile snapshot at the evaluation point flow into the PRAGMA encoder, which produces one embedding used by six downstream tasks.">
+        <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+        <line class="ln" x1="30" y1="120" x2="600" y2="120"/>
+        <!-- events above -->
+        <g><line class="ln" x1="80" y1="90" x2="80" y2="120"/><circle cx="80" cy="120" r="4" fill="var(--event)"/>
+          <rect class="be" x="16" y="24" width="128" height="66" rx="6"/>
+          <text class="m mu" x="26" y="42">2021-03-02</text><text class="b" x="26" y="60">topup</text><text class="m" x="26" y="78">in · 200.00 eur</text></g>
+        <g><line class="ln" x1="300" y1="90" x2="300" y2="120"/><circle cx="300" cy="120" r="4" fill="var(--event)"/>
+          <rect class="be" x="236" y="24" width="128" height="66" rx="6"/>
+          <text class="m mu" x="246" y="42">2023-06-18</text><text class="b" x="246" y="60">app_event</text><text class="m" x="246" y="78">screen: bills</text></g>
+        <g><line class="ln" x1="520" y1="90" x2="520" y2="120"/><circle cx="520" cy="120" r="4" fill="var(--event)"/>
+          <rect class="be" x="456" y="24" width="128" height="66" rx="6"/>
+          <text class="m mu" x="466" y="42">2025-08-30</text><text class="b" x="466" y="60">communication</text><text class="m" x="466" y="78">email · opened</text></g>
+        <!-- events below -->
+        <g><line class="ln" x1="190" y1="120" x2="190" y2="150"/><circle cx="190" cy="120" r="4" fill="var(--event)"/>
+          <rect class="be" x="126" y="150" width="128" height="66" rx="6"/>
+          <text class="m mu" x="136" y="168">2023-06-18</text><text class="b" x="136" y="186">card_payment</text><text class="m" x="136" y="204">out · 23.40 eur</text></g>
+        <g><line class="ln" x1="390" y1="120" x2="390" y2="150"/><circle cx="390" cy="120" r="4" fill="var(--event)"/>
+          <rect class="be" x="326" y="150" width="128" height="66" rx="6"/>
+          <text class="m mu" x="336" y="168">2024-09-05</text><text class="b" x="336" y="186">trading</text><text class="m" x="336" y="204">buy · etf · 150</text></g>
+        <!-- profile -->
+        <rect class="bp" x="470" y="150" width="122" height="104" rx="6"/>
+        <text class="b tp sm" x="480" y="168">PROFILE STATE</text>
+        <text class="m" x="480" y="186">plan: premium</text><text class="m" x="480" y="203">region: ie</text><text class="m" x="480" y="220">balance: q7</text><text class="m" x="480" y="237">first_topup ↺</text>
+        <!-- eval point -->
+        <line class="ln dash" x1="604" y1="14" x2="604" y2="270"/>
+        <text class="sm mu" x="604" y="288" text-anchor="middle">evaluation point: nothing after this is seen</text>
+        <!-- encoder -->
+        <line class="ln" x1="604" y1="120" x2="652" y2="120" marker-end="url(#a1)"/>
+        <rect class="bh" x="654" y="88" width="112" height="64" rx="8"/>
+        <text class="b th" x="710" y="116" text-anchor="middle">PRAGMA</text><text class="sm mu" x="710" y="134" text-anchor="middle">encoder</text>
+        <line class="ln" x1="766" y1="120" x2="790" y2="120" marker-end="url(#a1)"/>
+        <g fill="var(--history)"><rect x="794" y="111" width="8" height="18" opacity=".95"/><rect x="804" y="111" width="8" height="18" opacity=".55"/><rect x="814" y="111" width="8" height="18" opacity=".8"/><rect x="824" y="111" width="8" height="18" opacity=".35"/><rect x="834" y="111" width="8" height="18" opacity=".7"/><rect x="844" y="111" width="8" height="18" opacity=".5"/><rect x="854" y="111" width="8" height="18" opacity=".9"/></g>
+        <text class="sm b" x="862" y="100" text-anchor="end">customer embedding</text>
+        <text class="sm mu" x="862" y="148" text-anchor="end">192 to 1,024 numbers</text>
+        <g class="ln">
+          <path d="M866 120 C886 120 886 40 904 40"/><path d="M866 120 C886 120 886 72 904 72"/><path d="M866 120 C886 120 886 104 904 104"/>
+          <path d="M866 120 C886 120 886 136 904 136"/><path d="M866 120 C886 120 886 168 904 168"/><path d="M866 120 C886 120 886 200 904 200"/>
+        </g>
+        <text x="910" y="44">credit scoring</text><text x="910" y="76">external fraud</text><text x="910" y="108">lifetime value</text>
+        <text x="910" y="140">comms engagement</text><text x="910" y="172">product rec.</text><text x="910" y="204">recurring payments</text>
+      <rect class="hl hl-1" x="8" y="16" width="584" height="112" rx="10"/><rect class="hl hl-1" x="118" y="142" width="344" height="82" rx="10"/><rect class="hl hl-2" x="462" y="142" width="138" height="120" rx="10"/><rect class="hl hl-3" x="646" y="80" width="226" height="78" rx="10"/><rect class="hl hl-4" x="896" y="24" width="140" height="190" rx="10"/></svg>
+    <div class="tiles fade">
+      <div class="tile"><b>26M</b><span>customer records in the paper's corpus</span></div>
+      <div class="tile"><b>24B</b><span>events, from 111 countries</span></div>
+      <div class="tile"><b>207B</b><span>tokens after tokenisation</span></div>
+      <div class="tile"><b>25 months</b><span>pre-training window, 2023 to 2025</span></div>
+      <div class="tile"><b>10M → 1B</b><span>parameters across three sizes</span></div>
+    </div>
+  </div>
+
+  <!-- scene c -->
+  <div class="scene" id="sc-c">
+    <div class="cap">One card payment, field by field</div>
+    <div>
+      <div class="trow"><span><span class="chip k">type</span></span><span class="raw">card_payment</span><span class="vt"><span class="chip v">card_payment</span></span><span class="kind">category: one token</span></div>
+      <div class="trow"><span><span class="chip k">direction</span></span><span class="raw">out</span><span class="vt"><span class="chip v">out</span></span><span class="kind">category</span></div>
+      <div class="trow"><span><span class="chip k">amount</span></span><span class="raw">23.40</span><span class="vt"><span class="chip v">perc_31</span></span><span class="kind">number: percentile bucket</span></div>
+      <div class="trow"><span><span class="chip k">currency</span></span><span class="raw">eur</span><span class="vt"><span class="chip v">eur</span></span><span class="kind">category</span></div>
+      <div class="trow"><span><span class="chip k">fee</span></span><span class="raw">0.00</span><span class="vt"><span class="chip v">perc_0</span></span><span class="kind">number: zero has its own bucket</span></div>
+      <div class="trow"><span><span class="chip k">mcc</span></span><span class="raw">7512</span><span class="vt"><span class="chip v">7512</span></span><span class="kind">category: pinned by hand</span></div>
+      <div class="trow"><span><span class="chip k">description</span></span><span class="raw">city bike rental</span><span class="vt"><span class="chip v">city<sub>pos 0</sub></span><span class="chip v">bike<sub>pos 1</sub></span><span class="chip v">rent<sub>pos 2</sub></span><span class="chip v">al<sub>pos 3</sub></span></span><span class="kind">text: pieces, key repeated</span></div>
+      <div class="trow t-time"><span><span class="chip t">time</span></span><span class="raw">2023-06-18 18:42</span><span class="vt"><span class="chip t">soft-log distance</span><span class="chip t">hour 18</span><span class="chip t">weekday 7</span><span class="chip t">day 18</span></span><span class="kind">two clocks</span></div>
+    </div>
+    <div class="fade ruler"><svg viewBox="0 0 1000 170" role="img" aria-label="On a linear scale everything younger than a month is crushed into the first two percent of a five-year ruler; after the soft-log transform one minute, one hour, one day, thirty days, one year and five years are spread along the ruler at 17, 49, 74, 102, 122 and 134.">
+        <text class="sm mu" x="40" y="22">LINEAR SECONDS</text>
+        <line class="ln" x1="40" y1="46" x2="960" y2="46"/>
+        <g class="ln"><line x1="40" y1="40" x2="40" y2="52"/><line x1="55" y1="40" x2="55" y2="52"/><line x1="224" y1="40" x2="224" y2="52"/><line x1="960" y1="40" x2="960" y2="52"/></g>
+        <text class="sm mu" x="62" y="38">1 min, 1 hour, 1 day and 30 days all land in this sliver</text>
+        <text class="sm" x="224" y="66" text-anchor="middle">1 year</text><text class="sm" x="960" y="66" text-anchor="end">5 years</text>
+        <text class="sm tt b" x="40" y="100">AFTER 8 · ln(1 + t/8)</text>
+        <line x1="40" y1="124" x2="960" y2="124" stroke="var(--time)" stroke-width="2"/>
+        <g stroke="var(--time)" stroke-width="1.6"><line x1="40" y1="116" x2="40" y2="132"/><line x1="152.5" y1="116" x2="152.5" y2="132"/><line x1="361.3" y1="116" x2="361.3" y2="132"/><line x1="528.3" y1="116" x2="528.3" y2="132"/><line x1="707.1" y1="116" x2="707.1" y2="132"/><line x1="838.4" y1="116" x2="838.4" y2="132"/><line x1="923" y1="116" x2="923" y2="132"/></g>
+        <g text-anchor="middle"><text class="sm" x="40" y="110">now</text><text class="sm" x="152.5" y="110">1 min</text><text class="sm" x="361.3" y="110">1 hour</text><text class="sm" x="528.3" y="110">1 day</text><text class="sm" x="707.1" y="110">30 days</text><text class="sm" x="838.4" y="110">1 year</text><text class="sm" x="923" y="110">5 years</text></g>
+        <g text-anchor="middle"><text class="m tt" x="40" y="150">0</text><text class="m tt" x="152.5" y="150">17.1</text><text class="m tt" x="361.3" y="150">48.9</text><text class="m tt" x="528.3" y="150">74.3</text><text class="m tt" x="707.1" y="150">101.5</text><text class="m tt" x="838.4" y="150">121.5</text><text class="m tt" x="923" y="150">134.4</text></g>
+      </svg></div>
+  </div>
+
+  <!-- scene d -->
+  <div class="scene" id="sc-d">
+    <svg viewBox="0 0 1000 470" role="img" aria-label="Profile tokens pass through the Profile State Encoder to give a USR vector. Each event's tokens pass separately through the Event Encoder to give an EVT vector, to which calendar features are added. The History Encoder reads the USR vector and all EVT vectors together and outputs the customer embedding.">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <!-- profile row -->
+        <text class="sm b tp" x="20" y="22">PROFILE STATE</text>
+        <g class="m" text-anchor="middle">
+          <rect class="bp" x="20" y="32" width="62" height="30" rx="4"/><text x="51" y="51" class="m b">[USR]</text>
+          <rect class="bp" x="86" y="32" width="62" height="30" rx="4"/><text x="117" y="51" class="m">plan</text>
+          <rect class="bp" x="152" y="32" width="62" height="30" rx="4"/><text x="183" y="51" class="m">region</text>
+          <rect class="bp" x="218" y="32" width="62" height="30" rx="4"/><text x="249" y="51" class="m">balance</text>
+          <rect class="bp" x="284" y="32" width="84" height="30" rx="4"/><text x="326" y="51" class="m">first_topup</text>
+          <text class="m tt" x="51" y="78">0</text><text class="m tt" x="117" y="78">0</text><text class="m tt" x="183" y="78">0</text><text class="m tt" x="249" y="78">0</text><text class="m tt" x="326" y="78">133.5</text>
+        </g>
+        <text class="sm tt" x="20" y="96">soft-log time since each life-long item; 0 for plain attributes</text>
+        <line class="ln" x1="368" y1="47" x2="418" y2="47" marker-end="url(#a2)"/>
+        <rect class="bp" x="420" y="22" width="170" height="56" rx="8"/>
+        <text class="b tp" x="505" y="46" text-anchor="middle">Profile State Encoder</text>
+        <text class="sm mu" x="505" y="64" text-anchor="middle"><tspan id="dP">1 layer</tspan> · RoPE on time</text>
+        <line class="ln" x1="590" y1="50" x2="648" y2="50" marker-end="url(#a2)"/>
+
+        <!-- event rows -->
+        <text class="sm b te" x="20" y="136">EVENTS, OLDEST FIRST</text>
+        <!-- e1 -->
+        <text class="sm mu" x="20" y="156">event 1 · card_payment</text>
+        <g text-anchor="middle">
+          <rect class="be2" x="20" y="162" width="62" height="30" rx="4"/><text x="51" y="181" class="m b">[EVT]</text>
+          <rect class="be" x="86" y="162" width="62" height="30" rx="4"/><text x="117" y="181" class="m">type</text>
+          <rect class="be" x="152" y="162" width="62" height="30" rx="4"/><text x="183" y="181" class="m">amount</text>
+          <rect class="be" x="218" y="162" width="62" height="30" rx="4"/><text x="249" y="181" class="m">currency</text>
+          <rect class="be" x="284" y="162" width="72" height="30" rx="4"/><text x="320" y="181" class="m">mcc</text>
+        </g>
+        <line class="ln" x1="356" y1="177" x2="418" y2="177" marker-end="url(#a2)"/>
+        <rect class="be" x="420" y="155" width="170" height="44" rx="8"/>
+        <text class="b te" x="505" y="174" text-anchor="middle">Event Encoder</text>
+        <text class="sm mu" x="505" y="190" text-anchor="middle"><tspan id="dE">5 layers</tspan> · no RoPE</text>
+        <!-- e2 -->
+        <text class="sm mu" x="20" y="236">event 2 · app_event</text>
+        <g text-anchor="middle">
+          <rect class="be2" x="20" y="242" width="62" height="30" rx="4"/><text x="51" y="261" class="m b">[EVT]</text>
+          <rect class="be" x="86" y="242" width="62" height="30" rx="4"/><text x="117" y="261" class="m">type</text>
+          <rect class="be" x="152" y="242" width="62" height="30" rx="4"/><text x="183" y="261" class="m">screen</text>
+        </g>
+        <line class="ln" x1="214" y1="257" x2="418" y2="257" marker-end="url(#a2)"/>
+        <rect class="be" x="420" y="235" width="170" height="44" rx="8"/>
+        <text class="b te" x="505" y="254" text-anchor="middle">Event Encoder</text>
+        <text class="sm mu" x="505" y="270" text-anchor="middle">same weights</text>
+        <text class="mu" x="188" y="310" text-anchor="middle">⋮</text><text class="mu" x="505" y="310" text-anchor="middle">⋮</text><text class="mu" x="676" y="310" text-anchor="middle">⋮</text>
+        <!-- en -->
+        <text class="sm mu" x="20" y="346">event n · trading (most recent)</text>
+        <g text-anchor="middle">
+          <rect class="be2" x="20" y="352" width="62" height="30" rx="4"/><text x="51" y="371" class="m b">[EVT]</text>
+          <rect class="be" x="86" y="352" width="62" height="30" rx="4"/><text x="117" y="371" class="m">type</text>
+          <rect class="be" x="152" y="352" width="62" height="30" rx="4"/><text x="183" y="371" class="m">symbol</text>
+          <rect class="be" x="218" y="352" width="62" height="30" rx="4"/><text x="249" y="371" class="m">amount</text>
+          <rect class="be" x="284" y="352" width="72" height="30" rx="4"/><text x="320" y="371" class="m">price</text>
+        </g>
+        <line class="ln" x1="356" y1="367" x2="418" y2="367" marker-end="url(#a2)"/>
+        <rect class="be" x="420" y="345" width="170" height="44" rx="8"/>
+        <text class="b te" x="505" y="364" text-anchor="middle">Event Encoder</text>
+        <text class="sm mu" x="505" y="380" text-anchor="middle">same weights</text>
+        <text class="sm te" x="505" y="412" text-anchor="middle">events never attend to each other here</text>
+
+        <!-- calendar plus -->
+        <g>
+          <line class="ln" x1="590" y1="177" x2="604" y2="177"/><circle class="bt" cx="614" cy="177" r="10"/><text class="b tt" x="614" y="181" text-anchor="middle">+</text><line class="ln" x1="624" y1="177" x2="648" y2="177" marker-end="url(#a2)"/>
+          <line class="ln" x1="590" y1="257" x2="604" y2="257"/><circle class="bt" cx="614" cy="257" r="10"/><text class="b tt" x="614" y="261" text-anchor="middle">+</text><line class="ln" x1="624" y1="257" x2="648" y2="257" marker-end="url(#a2)"/>
+          <line class="ln" x1="590" y1="367" x2="604" y2="367"/><circle class="bt" cx="614" cy="367" r="10"/><text class="b tt" x="614" y="371" text-anchor="middle">+</text><line class="ln" x1="624" y1="367" x2="648" y2="367" marker-end="url(#a2)"/>
+        </g>
+        <text class="sm tt" x="540" y="436" text-anchor="middle">+ adds calendar: hour, weekday,</text>
+        <text class="sm tt" x="540" y="450" text-anchor="middle">day of month, via a small MLP</text>
+
+        <!-- sequence into history -->
+        <g text-anchor="middle">
+          <rect class="bp" x="650" y="35" width="52" height="30" rx="4"/><text x="676" y="54" class="m b">[USR]</text>
+          <rect class="be2" x="650" y="162" width="52" height="30" rx="4"/><text x="676" y="181" class="m b">[EVT]</text>
+          <rect class="be2" x="650" y="242" width="52" height="30" rx="4"/><text x="676" y="261" class="m b">[EVT]</text>
+          <rect class="be2" x="650" y="352" width="52" height="30" rx="4"/><text x="676" y="371" class="m b">[EVT]</text>
+          <text class="m tt" x="676" y="80">0</text><text class="m tt" x="676" y="207">101.5</text><text class="m tt" x="676" y="287">48.9</text><text class="m tt" x="676" y="397">0</text>
+        </g>
+        <g class="ln"><line x1="702" y1="50" x2="738" y2="50" marker-end="url(#a2)"/><line x1="702" y1="177" x2="738" y2="177" marker-end="url(#a2)"/><line x1="702" y1="257" x2="738" y2="257" marker-end="url(#a2)"/><line x1="702" y1="367" x2="738" y2="367" marker-end="url(#a2)"/></g>
+        <rect class="bh" x="740" y="22" width="120" height="372" rx="8"/>
+        <text class="b th" x="800" y="196" text-anchor="middle">History</text><text class="b th" x="800" y="212" text-anchor="middle">Encoder</text>
+        <text class="sm mu" x="800" y="234" text-anchor="middle" id="dH">2 layers</text>
+        <text class="sm mu" x="800" y="250" text-anchor="middle">RoPE on time</text><text class="sm mu" x="800" y="264" text-anchor="middle">to last event</text>
+        <g class="ln"><line x1="860" y1="50" x2="888" y2="50" marker-end="url(#a2)"/><line x1="860" y1="177" x2="888" y2="177" marker-end="url(#a2)"/><line x1="860" y1="257" x2="888" y2="257" marker-end="url(#a2)"/><line x1="860" y1="367" x2="888" y2="367" marker-end="url(#a2)"/></g>
+        <g text-anchor="middle">
+          <rect x="890" y="35" width="52" height="30" rx="4" fill="var(--history)"/><text x="916" y="54" class="m b" style="fill:var(--surface)">[USR]</text>
+          <rect class="bh" x="890" y="162" width="52" height="30" rx="4"/><text x="916" y="181" class="m">[EVT]</text>
+          <rect class="bh" x="890" y="242" width="52" height="30" rx="4"/><text x="916" y="261" class="m">[EVT]</text>
+          <rect class="bh" x="890" y="352" width="52" height="30" rx="4"/><text x="916" y="371" class="m">[EVT]</text>
+        </g>
+        <text class="sm b th" x="980" y="22" text-anchor="end">customer embedding</text>
+        <text class="sm mu" x="916" y="207" text-anchor="middle">event states,</text><text class="sm mu" x="916" y="221" text-anchor="middle">used in</text><text class="sm mu" x="916" y="235" text-anchor="middle">pre-training</text>
+        <text class="sm tt" x="740" y="436" text-anchor="middle">amber numbers: soft-log</text><text class="sm tt" x="740" y="450" text-anchor="middle">time to the last event</text>
+      <rect class="hl hl-1" x="10" y="124" width="612" height="296" rx="10"/><rect class="hl hl-2" x="10" y="8" width="590" height="94" rx="10"/><rect class="hl hl-3" x="642" y="12" width="226" height="394" rx="10"/><rect class="hl hl-4" x="866" y="6" width="128" height="66" rx="10"/></svg>
+    <div class="fade sizes-wrap"><table class="sizes">
+      <tr><th>SIZE</th><th>PARAMETERS</th><th>WIDTH</th><th>LAYERS profile / event / history</th><th>HEADS</th><th>PAPER'S HARDWARE</th></tr>
+      <tr><td>PRAGMA-S</td><td>10M</td><td>192</td><td>1 / 5 / 2</td><td>3</td><td>16× H100, about 2 days</td></tr>
+      <tr><td>PRAGMA-M</td><td>100M</td><td>512</td><td>3 / 16 / 6</td><td>8</td><td>16× H100, about 2 weeks</td></tr>
+      <tr><td>PRAGMA-L</td><td>1B</td><td>1,024</td><td>9 / 45 / 18</td><td>16</td><td>32× H100, about 2 weeks</td></tr>
+    </table></div>
+  </div>
+
+  <!-- scene p -->
+  <div class="scene" id="sc-p">
+    <svg viewBox="0 0 800 330" role="img" aria-label="Five events padded to twelve cells each, then the same thirty-five tokens packed end to end in one buffer.">
+      <text class="sm b mu" x="20" y="20">PADDED: 25 of 60 cells are padding</text>
+      <g id="padGrid"></g>
+      <g class="packed"><text class="sm b te" x="20" y="232">PACKED: 35 cells, all real</text><g id="packRow"></g></g>
+    </svg>
+    <div class="facts fade"><span><b>24</b> tokens per event</span><span><b>200</b> profile tokens</span><span>latest <b>6,500</b> events per customer</span><span>batches filled to a <b>token budget</b></span></div>
+    <div class="cards2 fade runw">
+      <div class="card"><h4>Storage</h4><ul><li>User index in LMDB: each customer's tokenised profile and token counts.</li><li>Event shards in Parquet, grouped by event count, streamed by workers.</li></ul></div>
+      <div class="card"><h4>Training run, as reported</h4><ul><li>bf16 mixed precision, Muon combined with AdamW.</li><li>S and M on 16 H100 GPUs, L on 32.</li><li>S about 2 days; M and L about 2 weeks each.</li></ul></div>
+    </div>
+  </div>
+
+  <!-- scene e -->
+  <div class="scene" id="sc-e">
+    <div class="cap">Six events of one customer · values to hide</div>
+    <div class="mask" id="maskBoard"></div>
+    <div class="mleg">
+      <span class="fade ml1"><span class="sw" style="background:var(--event-soft);border-color:var(--event)"></span>single token, 15%</span>
+      <span class="fade ml2"><span class="sw" style="background:var(--history-soft);border-color:var(--history)"></span>whole event, 10%</span>
+      <span class="fade ml3"><span class="sw" style="background:var(--profile-soft);border-color:var(--profile)"></span>one key everywhere, 10%</span>
+      <span class="fade ml4"><span class="sw" style="border-style:dashed;border-color:var(--muted)"></span>[UNK], no loss</span>
+    </div>
+    <div class="fade mlm"><svg viewBox="0 0 1000 150" role="img" aria-label="For each masked token the prediction head joins three vectors: the token's own Event Encoder output, the History Encoder output for its event, and the History Encoder output for USR. A linear layer maps the joined vector back to width d and it is scored against the shared embedding table.">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+        <text class="sm mu" x="95" y="34" text-anchor="middle">inside the event</text><text class="sm mu" x="245" y="34" text-anchor="middle">across events</text><text class="sm mu" x="395" y="34" text-anchor="middle">whole customer</text>
+        <rect class="be" x="20" y="44" width="150" height="48" rx="6"/><text class="b te" x="95" y="65" text-anchor="middle">masked token</text><text class="sm mu" x="95" y="81" text-anchor="middle">Event Encoder output</text>
+        <rect class="bh" x="170" y="44" width="150" height="48" rx="6"/><text class="b th" x="245" y="65" text-anchor="middle">its [EVT]</text><text class="sm mu" x="245" y="81" text-anchor="middle">History Encoder output</text>
+        <rect class="bh" x="320" y="44" width="150" height="48" rx="6"/><text class="b th" x="395" y="65" text-anchor="middle">[USR]</text><text class="sm mu" x="395" y="81" text-anchor="middle">History Encoder output</text>
+        <text class="sm mu" x="245" y="116" text-anchor="middle">joined end to end: 3 × d numbers</text>
+        <line class="ln" x1="470" y1="68" x2="518" y2="68" marker-end="url(#a3)"/>
+        <rect class="bx" x="520" y="44" width="120" height="48" rx="6"/><text class="b" x="580" y="65" text-anchor="middle">Linear</text><text class="sm mu" x="580" y="81" text-anchor="middle">3d → d</text>
+        <line class="ln" x1="640" y1="68" x2="688" y2="68" marker-end="url(#a3)"/>
+        <rect class="bx" x="690" y="44" width="150" height="48" rx="6"/><text class="b" x="765" y="65" text-anchor="middle">embedding table</text><text class="sm mu" x="765" y="81" text-anchor="middle">same one as the input</text>
+        <line class="ln" x1="840" y1="68" x2="878" y2="68" marker-end="url(#a3)"/>
+        <text class="b" x="884" y="65">predicted token</text><text class="sm mu" x="884" y="81">cross-entropy,</text><text class="sm mu" x="884" y="95">label smoothing</text>
+      </svg></div>
+  </div>
+
+  <!-- scene f -->
+  <div class="scene" id="sc-f">
+    <div class="cards2">
+      <div class="card c-probe"><h4>Embedding probe</h4><p>Frozen backbone. Standard-scaled embeddings, logistic regression fitted with L-BFGS. The paper also tries the last [EVT] vector and both together.</p></div>
+      <div class="card c-lora"><h4>LoRA fine-tune</h4><p>Rank 8, alpha 8, on attention QKV and MLP layers, with Adam. About one-eighth of pre-training time.</p></div>
+    </div>
+    <div class="fade resw"><table class="res" id="resTable"></table></div>
+    <div class="card finds"><h4>Findings worth telling the team</h4><ul>
+      <li>Small is already strong for recurring payments and lifetime value. Size pays off most in credit.</li>
+      <li>Adding the profile branch to an events-only PRAGMA-S lifted credit PR-AUC by 31.8% and fraud recall by 85.6%.</li>
+      <li>Dropping the newest events at scoring time moved fraud by at most 0.2% and credit by at most 0.9%. A lagging event feed is tolerable.</li></ul></div>
+    <div class="fade aml"><b>Anti-money-laundering: −47.1% F0.5</b> against the production model, using a linear probe on PRAGMA-L.</div>
+  </div>
+
+  <!-- scene g -->
+  <div class="scene" id="sc-g">
+    <div class="cols3">
+      <div class="fcol ok"><h4>Matches the paper</h4><ul>
+        <li>Size table exact: widths, depths, heads</li><li>One shared key + value embedding table</li><li>Soft-log time fed to RoPE</li><li>Three encoders; events read independently</li><li>Three-vector prediction head, tied to embeddings</li><li>Masking 15 / 10 / 10; [UNK] carries no loss</li><li>Limits 24 / 200 / 6,500</li><li>Muon + AdamW, bf16</li><li>LoRA rank 8, alpha 8</li></ul></div>
+      <div class="fcol warn"><h4>Paper is silent: guesses</h4><ul>
+        <li>Learning rates: Muon 3e-3, AdamW 3e-4</li><li>Warm-up 100 to 500 steps, cosine to 10%</li><li>[UNK] rate 10%</li><li>Label smoothing 0.1</li><li>64 percentile buckets per number field</li><li>Category cut-off: 1,000 distinct values</li><li>RoPE base 10,000</li><li>One time zone for all data, default UTC</li><li>Token budget 16,384</li></ul></div>
+      <div class="fcol diff"><h4>Differs from the paper</h4><ul>
+        <li>Probe defaults to gradient boosting; paper uses a linear probe</li><li>Probe reads [USR] only; paper also tries the last [EVT]</li><li>LoRA adapts one extra layer and uses AdamW</li><li>Shards in 7 event-count bands, not exact counts</li><li>Field types auto-detected; paper picks categories by hand</li><li>One task head: customer-level classification</li></ul></div>
+    </div>
+    <div class="verdict fade"><b>Faithful to the recipe. Unproven on results.</b>Every number in the repository comes from its synthetic data generator. The largest quality run on record is the small model on 50,000 synthetic customers for 2,000 steps. There are no training results for M or L.</div>
+  </div>
+
+  <!-- scene h -->
+  <div class="scene" id="sc-h">
+    <svg viewBox="0 0 1000 300" role="img" aria-label="Eight pipeline stages. Sources, de-identification and point-in-time snapshots, and warehouse export are yours to build. Tokenise, pre-train, adapt and serve are provided by pragmatiq with limits. Governance and monitoring span every stage and are yours.">
+        <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+        <text class="sm b" x="20" y="20" style="fill:var(--diff)">YOU BUILD</text>
+        <text class="sm b" x="392" y="20" style="fill:var(--ok)">PRAGMATIQ PROVIDES, WITH LIMITS</text>
+        <!-- row -->
+        <g>
+          <rect x="20" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--diff)" stroke-width="1.4"/>
+          <text class="b" x="74" y="54" text-anchor="middle">Sources</text>
+          <text class="sm mu" x="74" y="76" text-anchor="middle">cards, transfers</text><text class="sm mu" x="74" y="92" text-anchor="middle">app events</text><text class="sm mu" x="74" y="108" text-anchor="middle">trading</text><text class="sm mu" x="74" y="124" text-anchor="middle">communications</text><text class="sm mu" x="74" y="140" text-anchor="middle">profile, plan,</text><text class="sm mu" x="74" y="156" text-anchor="middle">milestones</text>
+          <line class="ln" x1="128" y1="107" x2="142" y2="107" marker-end="url(#a4)"/>
+          <rect x="144" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--diff)" stroke-width="1.4"/>
+          <text class="b" x="198" y="54" text-anchor="middle">Prepare</text>
+          <text class="sm mu" x="198" y="76" text-anchor="middle">remove identity</text><text class="sm mu" x="198" y="92" text-anchor="middle">pick evaluation</text><text class="sm mu" x="198" y="108" text-anchor="middle">points</text><text class="sm mu" x="198" y="124" text-anchor="middle">point-in-time</text><text class="sm mu" x="198" y="140" text-anchor="middle">profile: no</text><text class="sm mu" x="198" y="156" text-anchor="middle">future leakage</text>
+          <line class="ln" x1="252" y1="107" x2="266" y2="107" marker-end="url(#a4)"/>
+          <rect x="268" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--diff)" stroke-width="1.4"/>
+          <text class="b" x="322" y="54" text-anchor="middle">Export</text>
+          <text class="sm mu" x="322" y="76" text-anchor="middle">events and</text><text class="sm mu" x="322" y="92" text-anchor="middle">profiles to the</text><text class="sm mu" x="322" y="108" text-anchor="middle">Parquet contract,</text><text class="sm mu" x="322" y="124" text-anchor="middle">sorted by</text><text class="sm mu" x="322" y="140" text-anchor="middle">customer, then</text><text class="sm mu" x="322" y="156" text-anchor="middle">time</text>
+          <line class="ln" x1="376" y1="107" x2="390" y2="107" marker-end="url(#a4)"/>
+        </g>
+        <g>
+          <rect x="392" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="1.4"/>
+          <text class="b" x="446" y="54" text-anchor="middle">Tokenise</text>
+          <text class="sm mu" x="446" y="76" text-anchor="middle">fit vocabulary</text><text class="sm mu" x="446" y="92" text-anchor="middle">once, hash it</text><text class="sm mu" x="446" y="108" text-anchor="middle">write shards</text><text class="sm mu" x="446" y="124" text-anchor="middle">and user index</text>
+          <text class="sm" x="446" y="160" text-anchor="middle" style="fill:var(--warn)">single-node job</text>
+          <line class="ln" x1="500" y1="107" x2="514" y2="107" marker-end="url(#a4)"/>
+          <rect x="516" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="1.4"/>
+          <text class="b" x="570" y="54" text-anchor="middle">Pre-train</text>
+          <text class="sm mu" x="570" y="76" text-anchor="middle">multi-GPU DDP</text><text class="sm mu" x="570" y="92" text-anchor="middle">checkpoints</text><text class="sm mu" x="570" y="108" text-anchor="middle">exact resume</text><text class="sm mu" x="570" y="124" text-anchor="middle">auto batch sizing</text>
+          <text class="sm" x="570" y="160" text-anchor="middle" style="fill:var(--warn)">tested to 8 GPUs</text>
+          <line class="ln" x1="624" y1="107" x2="638" y2="107" marker-end="url(#a4)"/>
+          <rect x="640" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="1.4"/>
+          <text class="b" x="694" y="54" text-anchor="middle">Adapt</text>
+          <text class="sm mu" x="694" y="76" text-anchor="middle">probe per task</text><text class="sm mu" x="694" y="92" text-anchor="middle">LoRA per task</text><text class="sm mu" x="694" y="108" text-anchor="middle">cut history at</text><text class="sm mu" x="694" y="124" text-anchor="middle">each label date</text>
+          <text class="sm" x="694" y="160" text-anchor="middle" style="fill:var(--warn)">one head type</text>
+          <line class="ln" x1="748" y1="107" x2="762" y2="107" marker-end="url(#a4)"/>
+          <rect x="764" y="32" width="108" height="150" rx="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="1.4"/>
+          <text class="b" x="818" y="54" text-anchor="middle">Serve</text>
+          <text class="sm mu" x="818" y="76" text-anchor="middle">batch embeddings</text><text class="sm mu" x="818" y="92" text-anchor="middle">Triton, ONNX</text><text class="sm mu" x="818" y="108" text-anchor="middle">SageMaker and</text><text class="sm mu" x="818" y="124" text-anchor="middle">Databricks</text><text class="sm mu" x="818" y="140" text-anchor="middle">packaging</text>
+          <line class="ln" x1="872" y1="107" x2="886" y2="107" marker-end="url(#a4)"/>
+        </g>
+        <rect x="888" y="32" width="96" height="150" rx="8" fill="var(--surface)" stroke="var(--diff)" stroke-width="1.4"/>
+        <text class="b" x="936" y="54" text-anchor="middle">Consume</text>
+        <text class="sm mu" x="936" y="76" text-anchor="middle">credit, fraud,</text><text class="sm mu" x="936" y="92" text-anchor="middle">marketing</text><text class="sm mu" x="936" y="108" text-anchor="middle">models read</text><text class="sm mu" x="936" y="124" text-anchor="middle">the vector</text><text class="sm mu" x="936" y="140" text-anchor="middle">from a store</text>
+        <!-- governance band -->
+        <rect x="20" y="206" width="964" height="70" rx="8" fill="color-mix(in srgb, var(--diff) 7%, var(--surface))" stroke="var(--diff)" stroke-width="1.4"/>
+        <text class="b" x="36" y="230" style="fill:var(--diff)">Govern and monitor, across every stage: yours</text>
+        <text class="sm mu" x="36" y="250">model risk validation · fairness and proxy checks · explanations for credit decisions · access control on embeddings (they are personal data)</text>
+        <text class="sm mu" x="36" y="266">drift watch: rising [UNK] rate, embedding shift · retrain cadence · event-feed lag test · lineage from checkpoint to tokenizer hash to data snapshot</text>
+      <rect class="hl hl-1" x="12" y="6" width="372" height="184" rx="10"/><rect class="hl hl-1" x="880" y="24" width="112" height="166" rx="10"/><rect class="hl hl-2" x="386" y="6" width="492" height="184" rx="10"/><rect class="hl hl-3" x="12" y="198" width="980" height="86" rx="10"/></svg>
+    <div class="fade gapsw"><table class="gaps">
+      <tr><td>Data volume in</td><td>Reads a single <code>events.parquet</code>; tokenising runs on one machine. Write the export as a distributed warehouse job.</td></tr>
+      <tr><td>Object storage</td><td>No checkpoint reaches remote storage during a run. Train on durable disk with a periodic sync.</td></tr>
+      <tr><td>Multi-GPU scale</td><td>Tested on 1 to 8 GPUs with the small model, 69% efficiency at 8. Run your own scaling test on M.</td></tr>
+      <tr><td>Time zones</td><td>One zone for the whole dataset, default UTC. Set the local zone, or daily rhythm blurs.</td></tr>
+      <tr><td>Field typing</td><td>Automatic. Pin MCC, BIN and postcode columns as categories.</td></tr>
+      <tr><td>Vocabulary drift</td><td>New values become <code>[UNK]</code>. Track the rate and plan a refit and re-pre-train cycle.</td></tr>
+      <tr><td>Paper protocol</td><td>Set the logistic probe; add a last-<code>[EVT]</code> probe and event-level heads for fraud and recurring payments.</td></tr>
+      <tr><td>Shipped weights</td><td>Trained on synthetic data only. Pre-train from scratch on your own.</td></tr>
+      <tr><td>Fairness, model risk</td><td>Out of scope in the project. Subgroup testing and an explanation method are needed before a credit use.</td></tr>
+      <tr><td>Licence</td><td>Apache-2.0; independent of Revolut. Clear it through open-source intake and pin the version.</td></tr>
+    </table></div>
+  </div>
+
+  <!-- scene i -->
+  <div class="scene" id="sc-i">
+    <div class="stages">
+      <div class="stg g1"><span class="s">stage 0</span><h4>Learn on synthetic</h4><p>Run the quickstart and acceptance gates on your own hardware.</p><p class="exit"><b>Exit:</b> gates pass on your GPUs and the team can explain chapters 2 to 5.</p></div>
+      <div class="stg g2"><span class="s">stage 1</span><h4>PRAGMA-S, one task</h4><p>100k to 1M real customers. Credit default, out-of-time, against the production model. Logistic probe first, then LoRA.</p><p class="exit"><b>Exit:</b> the probe clearly beats a raw-count baseline and LoRA is competitive with production.</p></div>
+      <div class="stg g3"><span class="s">stage 2</span><h4>Scale and widen</h4><p>PRAGMA-M on the full book, three to six tasks. Sweep the guessed settings on S first.</p><p class="exit"><b>Exit:</b> one backbone matches or beats several task-specific models.</p></div>
+      <div class="stg g4"><span class="s">stage 3</span><h4>Production</h4><p>Batch and online serving, an embedding store with access control, monitoring, a refresh cadence, model-risk sign-off.</p><p class="exit"><b>Exit:</b> the first governed model in production reads the embedding.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="steps">
+
+  <section class="step" data-scene="a" data-n="1" data-ch="1"><p class="chapter" id="ch1">1 · The idea</p><h2>A customer is a timeline of events</h2><p>Today most banks build one feature pipeline per model: credit has its features, fraud has its own, marketing a third set.</p><p>PRAGMA starts from the raw material. Card payments, app screens, trades and messages all share one shape: a timestamp plus key–value pairs.</p></section>
+  <section class="step" data-scene="a" data-n="2" data-ch="1"><h2>Plus a snapshot of who they are</h2><p>The profile holds slow-changing facts at the evaluation point: plan, region, balance band. Nothing after that point is seen.</p><p>Life-long items such as the first top-up keep their own date, so old milestones survive when a long history is cut short.</p></section>
+  <section class="step" data-scene="a" data-n="3" data-ch="1"><h2>One model reads all of it</h2><p>PRAGMA turns the events and the profile into one vector that describes the customer: 192 to 1,024 numbers, depending on model size.</p></section>
+  <section class="step" data-scene="a" data-n="4" data-ch="1"><h2>Many tasks share that one vector</h2><p>Each downstream team trains a small model on the embedding, in place of its own feature pipeline.</p><p>The paper's corpus gives a sense of the scale involved.</p></section>
+  <section class="step" data-scene="c" data-n="1" data-ch="2"><p class="chapter" id="ch2">2 · Tokens and time</p><h2>Every field becomes a key and a value</h2><p>A language model would read <code>amount: 23.40</code> as a handful of text fragments and lose the fact that it is a number attached to a field called amount.</p><p>PRAGMA keeps the structure. Each field name is a <b>key</b>: one token that says what the field means. The paper has about 60 of them.</p></section>
+  <section class="step" data-scene="c" data-n="2" data-ch="2"><h2>Values become tokens by type</h2><p>A category is one token. A number goes into a percentile bucket learned from the data, with zero in a bucket of its own. Free text is split into pieces, and the key is repeated for each piece.</p><p>Key and value are looked up in the same table and added together. This event becomes 10 key–value pairs. The paper's value vocabulary is about 28,000 tokens.</p></section>
+  <section class="step" data-scene="c" data-n="3" data-ch="2"><h2>Time is a position, with two clocks</h2><p>The first clock is seconds before the customer's latest event, squeezed by <code>8·ln(1+t/8)</code>. One minute lands at 17, one year at 122. Recent gaps stay sharp and years of history still fit.</p><p>The second is the calendar: hour, weekday and day of month, so daily and weekly rhythm is visible. It applies to events only.</p></section>
+  <section class="step" data-scene="d" data-n="1" data-ch="3"><p class="chapter" id="ch3">3 · Three encoders</p><h2>Each event is read alone</h2><p>The Event Encoder turns one event's tokens into a single vector, the <code>[EVT]</code> output. Events cannot see each other at this stage. Calendar features are added on the way out.</p></section>
+  <section class="step" data-scene="d" data-n="2" data-ch="3"><h2>The profile is read alone too</h2><p>The Profile State Encoder produces one <code>[USR]</code> vector. Its sense of position is the time since each milestone, so "opened four years ago" is something it can use.</p></section>
+  <section class="step" data-scene="d" data-n="3" data-ch="3"><h2>Then the whole history is read together</h2><p>The History Encoder takes <code>[USR]</code> followed by every <code>[EVT]</code>, oldest first, with time-to-latest-event as position. Patterns across weeks and months appear here.</p><p>It sees one position per event. A 6,500-event history costs 6,501 positions, where the raw tokens would number about 56,000.</p></section>
+  <section class="step" data-scene="d" data-n="4" data-ch="3"><h2>One vector comes out</h2><p>The <code>[USR]</code> output is the customer embedding. All three encoders are bidirectional, pre-norm, with GELU and dropout 0.1.</p><p>The same design comes in three sizes. The drawing shows the small one.</p></section>
+  <section class="step" data-scene="e" data-n="1" data-ch="4"><p class="chapter" id="ch4">4 · Pre-training</p><h2>Training is a fill-in-the-blank game</h2><p>No labels are needed. Hide 15% of values at random. The model predicts each one from the rest of its event.</p></section>
+  <section class="step" data-scene="e" data-n="2" data-ch="4"><h2>Hide whole events</h2><p>10% of events are blanked entirely. Now the only clue is the surrounding history.</p></section>
+  <section class="step" data-scene="e" data-n="3" data-ch="4"><h2>Hide one field everywhere</h2><p>10% of keys are blanked across all of the customer's events. To guess an amount, the model has to use everything that is not an amount.</p></section>
+  <section class="step" data-scene="e" data-n="4" data-ch="4"><h2>Add a little noise, then score</h2><p>A few picks become <code>[UNK]</code> and carry no loss, which stops the model leaning on the mask symbol.</p><p>Each guess is built from three vectors (the token, its event, the customer) and scored against the same embedding table used on the way in.</p></section>
+  <section class="step" data-scene="p" data-n="1" data-ch="5"><p class="chapter" id="ch5">5 · Scale plumbing</p><h2>Histories are wildly uneven</h2><p>Ordinary batching pads every event to the longest one. Here 25 of 60 cells are padding, and the GPU would spend that share of its time on nothing.</p></section>
+  <section class="step" data-scene="p" data-n="2" data-ch="5"><h2>So nothing is padded</h2><p>All tokens are packed end to end, and attention is told where each event starts and stops. The paper reports 2 to 5 times the throughput of a padded baseline.</p><p>Three limits keep memory bounded. The 24-token limit touches only 0.01% of events.</p></section>
+  <section class="step" data-scene="p" data-n="3" data-ch="5"><h2>Storage and the training run</h2><p>Customers with the same number of events are stored together, so the History Encoder batch is a clean rectangle too.</p><p>The paper gives hardware and wall-clock time. It does not give learning rates, batch size, warm-up or number of steps. Anyone reimplementing it has to choose these.</p></section>
+  <section class="step" data-scene="f" data-n="1" data-ch="6"><p class="chapter" id="ch6">6 · Using it</p><h2>Probe: minutes</h2><p>Freeze the model, export the embedding, fit a linear model on it. Use this to find out quickly whether a task or a new data source is worth the effort.</p></section>
+  <section class="step" data-scene="f" data-n="2" data-ch="6"><h2>LoRA: hours to days</h2><p>Train small rank-8 adapters on 2 to 4% of the weights. One shared backbone carries a different adapter for each task.</p></section>
+  <section class="step" data-scene="f" data-n="3" data-ch="6"><h2>What Revolut reported</h2><p>Gains of the LoRA-adapted model over their own task-specific models, by size. Credit improves most with scale; recurring payments barely move.</p><p>These are relative numbers on private data. They describe Revolut's baselines and are no forecast for yours.</p></section>
+  <section class="step" data-scene="f" data-n="4" data-ch="6"><h2>Three findings to plan around</h2><p>The ablations in the paper say which design choices matter and how robust the model is to a late event feed.</p></section>
+  <section class="step" data-scene="f" data-n="5" data-ch="6"><h2>Where it loses</h2><p>Anti-money-laundering depends on who pays whom. PRAGMA reads each customer in isolation. Plan AML as a separate, graph-based project.</p></section>
+  <section class="step" data-scene="g" data-n="1" data-ch="7"><p class="chapter" id="ch7">7 · Fidelity check</p><h2>What matches the paper</h2><p>Checked by reading the pragmatiq 1.1.0 source against the paper: architecture, tokenisation, masking, prediction head, limits and optimiser all line up. Recounting the layers gives 9.1M, 94M and 940M parameters.</p></section>
+  <section class="step" data-scene="g" data-n="2" data-ch="7"><h2>What the paper never said</h2><p>Learning rates, warm-up, noise rate, bucket counts. pragmatiq picks a default for each and marks it <code># GUESS</code> in the code. Sweep these first, on the small model.</p></section>
+  <section class="step" data-scene="g" data-n="3" data-ch="7"><h2>What differs</h2><p>Mostly evaluation defaults. Run the probe with <code>--probe-model logistic</code> to follow the paper, pin code-like columns as categories, and expect to write event-level heads yourself.</p></section>
+  <section class="step" data-scene="g" data-n="4" data-ch="7"><h2>The verdict</h2><p>The recipe is followed closely. The results are unproven, and they cannot be proven from outside: the paper publishes relative gains only. Your own out-of-time test is the evidence that counts.</p></section>
+  <section class="step" data-scene="h" data-n="1" data-ch="8"><p class="chapter" id="ch8">8 · Enterprise build</p><h2>Both ends are yours</h2><p>Sources, preparation, export and the consuming models have no code in pragmatiq.</p></section>
+  <section class="step" data-scene="h" data-n="2" data-ch="8"><h2>The middle exists, with limits</h2><p>Tokenising runs on one machine. Multi-GPU training was tested to 8 GPUs, where the paper used 16 to 32. Only a customer-level task head ships.</p></section>
+  <section class="step" data-scene="h" data-n="3" data-ch="8"><h2>Governance spans everything</h2><p>Model-risk validation, fairness checks, explanations and access control on embeddings are left to whoever trains on real data. Bring those teams in from the first real-data stage.</p></section>
+  <section class="step" data-scene="h" data-n="4" data-ch="8"><h2>Gaps to close before production</h2><p>Found by reading the code and its own documentation. None is a reason to stop; each needs an owner.</p></section>
+  <section class="step" data-scene="i" data-n="1" data-ch="9"><p class="chapter" id="ch9">9 · Rollout</p><h2>Stage 0: learn on synthetic data</h2><p>pragmatiq ships a synthetic bank. Use it so the whole team can trace one customer from raw event to embedding without touching real data.</p></section>
+  <section class="step" data-scene="i" data-n="2" data-ch="9"><h2>Stage 1: small model, one task</h2><p>The first real evidence. Keep it narrow: one task, an out-of-time test, and the production model as the bar.</p></section>
+  <section class="step" data-scene="i" data-n="3" data-ch="9"><h2>Stage 2: scale and widen</h2><p>Move to the medium model and several tasks only after stage 1 passes. Repeat the paper's profile and event-lag tests on your data.</p></section>
+  <section class="step" data-scene="i" data-n="4" data-ch="9"><h2>Stage 3: production</h2><p>The stages are a suggested sequence, sized from what the paper reports and what the code supports. Adjust them to your team.</p></section>
+
+</div>
+
+</div>
+
+<footer>
+  <h3>Words your team will hear</h3>
+  <dl class="gloss">
+    <div><dt>evaluation point</dt><dd>The moment a prediction is made. The model sees only what happened before it.</dd></div>
+    <div><dt>profile state</dt><dd>Slow-changing facts about the customer at the evaluation point.</dd></div>
+    <div><dt>life-long event</dt><dd>A first-time milestone kept in the profile with its own date.</dd></div>
+    <div><dt>[USR] and [EVT]</dt><dd>Extra tokens at the front of the profile and of each event. Their outputs summarise the customer and the event.</dd></div>
+    <div><dt>masked modelling</dt><dd>Training by hiding tokens and predicting them. Needs no labels.</dd></div>
+    <div><dt>RoPE</dt><dd>A way of telling attention how far apart two positions are. Here the distance is time.</dd></div>
+    <div><dt>linear probe</dt><dd>A simple linear model fitted on frozen embeddings.</dd></div>
+    <div><dt>LoRA</dt><dd>Small trainable matrices beside frozen weights, a few percent of the model per task.</dd></div>
+    <div><dt>token budget</dt><dd>The number of tokens allowed in one batch.</dd></div>
+    <div><dt>shard</dt><dd>One file of tokenised customers with similar history lengths.</dd></div>
+  </dl>
+  <p class="src"><b>Sources.</b> Ostroukhov et al., "PRAGMA: Revolut Foundation Model", arXiv:2604.08649v2, 24 August 2026. pragmatiq 1.1.0, github.com/dynamiq-ai/pragmatiq, commit eb6928c: source code, README, MODEL_CARD.md and committed benchmark files. All paper results are relative to Revolut's internal baselines. Example events, bucket ids and text pieces are invented for illustration. Chapter 7 reflects a reading of the code; no training run was performed.</p>
+</footer>
+
+<script>
+(function () {
+  var stage = document.getElementById("stage");
+  var NS = "http://www.w3.org/2000/svg";
+
+  // ---- masking board
+  var events = [
+    ["card_payment", [["type", "card_payment"], ["direction", "out"], ["amount", "perc_31"], ["currency", "eur"], ["mcc", "7512"], ["merchant", "city"], ["merchant", "bike"]]],
+    ["app_event", [["type", "app_event"], ["screen", "split_bill"]]],
+    ["p2p_transfer", [["type", "p2p_transfer"], ["direction", "out"], ["amount", "perc_44"], ["currency", "eur"]]],
+    ["card_payment", [["type", "card_payment"], ["direction", "out"], ["amount", "perc_12"], ["currency", "gbp"], ["mcc", "5411"]]],
+    ["trading", [["type", "trading"], ["direction", "buy"], ["symbol", "etf"], ["amount", "perc_52"], ["price", "perc_38"]]],
+    ["communication", [["type", "communication"], ["channel", "email"], ["product", "savings"], ["interact", "opened"]]]
+  ];
+  var picks = { "0-4": "tok", "4-2": "tok", "5-1": "tok", "3-3": "unk", "2-0": "evt", "2-1": "evt", "2-2": "evt", "2-3": "evt", "0-2": "key", "3-2": "key", "4-3": "key" };
+  var board = document.getElementById("maskBoard");
+  events.forEach(function (e, i) {
+    var row = document.createElement("div"); row.className = "mrow";
+    var lab = document.createElement("div"); lab.className = "lab"; lab.textContent = "event " + (i + 1); row.appendChild(lab);
+    e[1].forEach(function (kv, j) {
+      var kind = picks[i + "-" + j];
+      var c = document.createElement("div"); c.className = "mt" + (kind ? " k-" + kind : "");
+      var k = document.createElement("i"); k.textContent = kv[0]; c.appendChild(k);
+      var v = document.createElement("span"); v.className = "val"; v.textContent = kv[1]; c.appendChild(v);
+      var m = document.createElement("span"); m.className = "msk"; m.textContent = kind === "unk" ? "[UNK]" : "[MASK]"; c.appendChild(m);
+      row.appendChild(c);
+    });
+    board.appendChild(row);
+  });
+
+  // ---- results table (paper Table 2, left block)
+  var res = [
+    ["Credit scoring", "PR-AUC", 70.3, 98.0, 130.2], ["", "ROC-AUC", 6.2, 10.1, 12.4],
+    ["Comms engagement", "PR-AUC", 76.6, 76.7, 79.4], ["", "ROC-AUC", 19.6, 17.4, 20.4],
+    ["External fraud", "Precision", 0.3, 12.3, 16.7], ["", "Recall", 33.4, 66.4, 64.7],
+    ["Product recommendation", "mAP", 10.6, 31.5, 40.5], ["Recurrent transactions", "F1", 5.2, 5.8, 5.6],
+    ["Lifetime value", "PR-AUC", -1.2, 0.3, 1.8], ["", "ROC-AUC", -0.8, 0.9, 2.6]
+  ];
+  var rt = document.getElementById("resTable");
+  var h = "<tr><th>TASK</th><th>METRIC</th><th>PRAGMA-S</th><th>PRAGMA-M</th><th>PRAGMA-L</th></tr>";
+  res.forEach(function (r) {
+    h += "<tr><td>" + r[0] + "</td><td class='t'>" + r[1] + "</td>";
+    for (var k = 2; k < 5; k++) {
+      var v = r[k];
+      h += v < 0 ? "<td class='n neg'>−" + Math.abs(v).toFixed(1) + "%</td>"
+                 : "<td class='n' style='--v:" + (v / 130.2 * 100).toFixed(1) + "'>+" + v.toFixed(1) + "%</td>";
+    }
+    h += "</tr>";
+  });
+  rt.innerHTML = h;
+
+  // ---- padded vs packed
+  function rect(x, y, w, hh, cls) { var r = document.createElementNS(NS, "rect"); r.setAttribute("x", x); r.setAttribute("y", y); r.setAttribute("width", w); r.setAttribute("height", hh); r.setAttribute("rx", 2); r.setAttribute("class", cls); return r; }
+  function text(x, y, s, cls, anchor) { var t = document.createElementNS(NS, "text"); t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("class", cls); if (anchor) t.setAttribute("text-anchor", anchor); t.textContent = s; return t; }
+  var lens = [12, 3, 7, 4, 9], pg = document.getElementById("padGrid"), pr = document.getElementById("packRow");
+  lens.forEach(function (n, r) {
+    pg.appendChild(text(20, 51 + r * 32, "e" + (r + 1), "m mu"));
+    for (var c = 0; c < 12; c++) pg.appendChild(rect(50 + c * 44, 36 + r * 32, 40, 24, c < n ? (c === 0 ? "be2" : "be") : "pad"));
+  });
+  var x = 20, w = 21;
+  lens.forEach(function (n, r) {
+    var x0 = x;
+    for (var c = 0; c < n; c++) { pr.appendChild(rect(x, 246, w - 2, 30, c === 0 ? "be2" : "be")); x += w; }
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", "M" + (x0 + 0.5) + " 284v6H" + (x - 2.5) + "v-6"); p.setAttribute("class", "ln"); pr.appendChild(p);
+    pr.appendChild(text((x0 + x - 2) / 2, 308, "e" + (r + 1), "m mu", "middle"));
+    x += 6;
+  });
+
+  // ---- scale the 800 x 580 stage to the space available
+  var wrap = stage.parentNode;
+  function fit() {
+    var s = Math.min((wrap.clientWidth - 8) / 800, (wrap.clientHeight - 16) / 580, 1.25);
+    stage.style.transform = "scale(" + Math.max(s, 0.3) + ")";
+  }
+  window.addEventListener("resize", fit); fit();
+
+  // ---- scroll driver
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.chapters a"));
+  var current = null;
+  function activate(el) {
+    if (el === current) return; current = el;
+    var n = +el.getAttribute("data-n"), cls = "stage scene-" + el.getAttribute("data-scene") + " at-" + n;
+    for (var i = 1; i <= n; i++) cls += " ge-" + i;
+    stage.className = cls;
+    steps.forEach(function (s) { s.classList.toggle("is-active", s === el); });
+    var ch = el.getAttribute("data-ch");
+    links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-ch") === ch); });
+  }
+  function onScroll() {
+    var mid = window.innerHeight * 0.55, best = steps[0], bestD = Infinity;
+    steps.forEach(function (s) {
+      var r = s.getBoundingClientRect(), c = (r.top + r.bottom) / 2, d = Math.abs(c - mid);
+      if (d < bestD) { bestD = d; best = s; }
+    });
+    activate(best);
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+})();
+</script>
+</body>
+</html>
