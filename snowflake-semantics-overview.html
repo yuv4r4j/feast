@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snowflake semantics: overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+html{scroll-behavior:smooth}
+body{margin:0;background:#E9EAEC;font-family:Inter,system-ui,sans-serif;color:#16181D}
+a{color:#2F5BD3}a:hover{color:#1E3F99}
+.top{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 24px;background:#16181D;color:#fff}
+.top b{font-family:'Space Grotesk',Inter,sans-serif;font-size:16px;margin-right:auto}
+.top a{color:#fff;text-decoration:none;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid #4A4F5C}
+.top a:hover{background:#33363F;color:#fff}
+.board{padding:28px 24px 12px;scroll-margin-top:64px}
+.cap{width:var(--w);margin:0 auto 10px;font-size:14px;font-weight:600;color:#33363F}
+.cap span{color:#5B6170;font-weight:500;margin-right:8px}
+.frame{width:1440px;margin:0 auto;zoom:var(--z);border-radius:12px;overflow:hidden;box-shadow:0 6px 24px rgba(22,24,29,.12)}
+@media print{.top{display:none}body{background:#fff}.board{padding:0;break-after:page}.frame{box-shadow:none;border-radius:0}}
+</style>
+</head>
+<body>
+<nav class="top"><b>Taxonomy, ontology, knowledge graph, semantic view and semantic layer in Snowflake</b><a href="#b1">1 · Fit together</a><a href="#b2">2 · Side by side</a><a href="#b3">3 · Mental model</a></nav>
+<section class="board" id="b1"><div class="cap"><span>1 / 3</span> How they fit together</div><div class="frame">
+<div style="position: relative; width: 1440px; height: 900px; background: #F6F6F3; font-family: Inter, system-ui, sans-serif; color: #16181D; overflow: hidden">
+
+<div style="position: absolute; left: 64px; top: 344px; width: 840px; height: 248px; box-sizing: border-box; background: #EAF0FB; border: 2px dashed #2F5BD3; border-radius: 16px"></div>
+
+<svg aria-hidden="true" width="8" height="84" viewBox="0 0 8 84" preserveAspectRatio="none" style="position: absolute; left: 480px; top: 312px; width: 8px; height: 84px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 84"></path></svg>
+<svg aria-hidden="true" width="648" height="8" viewBox="0 0 648 8" preserveAspectRatio="none" style="position: absolute; left: 160px; top: 308px; width: 648px; height: 8px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 0 4 L 648 4"></path></svg>
+<svg role="img" aria-label="From Semantic View to BI tools" width="8" height="31" viewBox="0 0 8 31" preserveAspectRatio="none" style="position: absolute; left: 156px; top: 281px; width: 8px; height: 31px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-1" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5B6170" stroke="none" style="stroke: none; fill: #5B6170; fill: context-stroke"/></marker></defs><path d="M 4 31 L 4 4" marker-end="url(#dc-arrow-head-filled-1)"></path></svg>
+<svg role="img" aria-label="From Semantic View to Cortex Analyst" width="8" height="31" viewBox="0 0 8 31" preserveAspectRatio="none" style="position: absolute; left: 372px; top: 281px; width: 8px; height: 31px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-2" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5B6170" stroke="none" style="stroke: none; fill: #5B6170; fill: context-stroke"/></marker></defs><path d="M 4 31 L 4 4" marker-end="url(#dc-arrow-head-filled-2)"></path></svg>
+<svg role="img" aria-label="From Semantic View to Cortex Agents" width="8" height="31" viewBox="0 0 8 31" preserveAspectRatio="none" style="position: absolute; left: 588px; top: 281px; width: 8px; height: 31px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-3" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5B6170" stroke="none" style="stroke: none; fill: #5B6170; fill: context-stroke"/></marker></defs><path d="M 4 31 L 4 4" marker-end="url(#dc-arrow-head-filled-3)"></path></svg>
+<svg role="img" aria-label="From Semantic View to SQL queries" width="8" height="31" viewBox="0 0 8 31" preserveAspectRatio="none" style="position: absolute; left: 804px; top: 281px; width: 8px; height: 31px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-4" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5B6170" stroke="none" style="stroke: none; fill: #5B6170; fill: context-stroke"/></marker></defs><path d="M 4 31 L 4 4" marker-end="url(#dc-arrow-head-filled-4)"></path></svg>
+
+<svg aria-hidden="true" width="8" height="50" viewBox="0 0 8 50" preserveAspectRatio="none" style="position: absolute; left: 156px; top: 618px; width: 8px; height: 50px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 50"></path></svg>
+<svg aria-hidden="true" width="8" height="50" viewBox="0 0 8 50" preserveAspectRatio="none" style="position: absolute; left: 372px; top: 618px; width: 8px; height: 50px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 50"></path></svg>
+<svg aria-hidden="true" width="8" height="50" viewBox="0 0 8 50" preserveAspectRatio="none" style="position: absolute; left: 588px; top: 618px; width: 8px; height: 50px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 50"></path></svg>
+<svg aria-hidden="true" width="8" height="50" viewBox="0 0 8 50" preserveAspectRatio="none" style="position: absolute; left: 804px; top: 618px; width: 8px; height: 50px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 50"></path></svg>
+<svg aria-hidden="true" width="648" height="8" viewBox="0 0 648 8" preserveAspectRatio="none" style="position: absolute; left: 160px; top: 614px; width: 648px; height: 8px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 0 4 L 648 4"></path></svg>
+<svg role="img" aria-label="From physical tables up to the Semantic View" width="8" height="49" viewBox="0 0 8 49" preserveAspectRatio="none" style="position: absolute; left: 480px; top: 569px; width: 8px; height: 49px; overflow: visible; fill: none; stroke: #5B6170; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-5" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5B6170" stroke="none" style="stroke: none; fill: #5B6170; fill: context-stroke"/></marker></defs><path d="M 4 49 L 4 4" marker-end="url(#dc-arrow-head-filled-5)"></path></svg>
+
+<svg role="img" aria-label="From Ontology to Semantic View: the ontology informs names, synonyms and relationships" width="119" height="8" viewBox="0 0 119 8" preserveAspectRatio="none" style="position: absolute; left: 881px; top: 542px; width: 119px; height: 8px; overflow: visible; fill: none; stroke: #B4530A; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 6"><defs><marker id="dc-arrow-head-filled-6" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#B4530A" stroke="none" style="stroke: none; fill: #B4530A; fill: context-stroke; stroke-dasharray: none"/></marker></defs><path d="M 119 4 L 4 4" marker-end="url(#dc-arrow-head-filled-6)"></path></svg>
+<svg role="img" aria-label="From Ontology to Knowledge Graph: the ontology is the graph's schema" width="8" height="59" viewBox="0 0 8 59" preserveAspectRatio="none" style="position: absolute; left: 1184px; top: 608px; width: 8px; height: 59px; overflow: visible; fill: none; stroke: #6D3FC4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-7" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#6D3FC4" stroke="none" style="stroke: none; fill: #6D3FC4; fill: context-stroke"/></marker></defs><path d="M 4 0 L 4 55" marker-end="url(#dc-arrow-head-filled-7)"></path></svg>
+<svg role="img" aria-label="From physical tables to Knowledge Graph: rows loaded as node and edge instances" width="95" height="8" viewBox="0 0 95 8" preserveAspectRatio="none" style="position: absolute; left: 904px; top: 700px; width: 95px; height: 8px; overflow: visible; fill: none; stroke: #6D3FC4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-8" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#6D3FC4" stroke="none" style="stroke: none; fill: #6D3FC4; fill: context-stroke"/></marker></defs><path d="M 0 4 L 91 4" marker-end="url(#dc-arrow-head-filled-8)"></path></svg>
+
+<svg role="img" aria-label="From Taxonomy to Ontology: the taxonomy is the backbone of the ontology" width="8" height="31" viewBox="0 0 8 31" preserveAspectRatio="none" style="position: absolute; left: 1184px; top: 452px; width: 8px; height: 31px; overflow: visible; fill: none; stroke: #B8336A; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-9" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#B8336A" stroke="none" style="stroke: none; fill: #B8336A; fill: context-stroke"/></marker></defs><path d="M 4 0 L 4 27" marker-end="url(#dc-arrow-head-filled-9)"></path></svg>
+
+<div style="position: absolute; left: 64px; top: 52px; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: -0.5px">How the five ideas fit together in Snowflake</div>
+<div style="position: absolute; left: 64px; top: 108px; width: 1100px; font-size: 17px; line-height: 26px; color: #4A4F5C">A lending example. Blue is the semantic layer (an architecture idea), teal is the Snowflake object that implements it, pink is classification, orange is meaning, purple is connected instances.</div>
+
+<div style="position: absolute; left: 64px; top: 172px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 1.2px; color: #4A4F5C">CONSUMERS</div>
+<div style="position: absolute; left: 64px; top: 200px; width: 192px; height: 80px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #FFFFFF; border: 1px solid #D5D8DF; border-radius: 12px; font-size: 15px; line-height: 21px"><span><b>BI tools</b><br><span style="color: #4A4F5C">Tableau · Sigma · Power BI</span></span></div>
+<div style="position: absolute; left: 280px; top: 200px; width: 192px; height: 80px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #FFFFFF; border: 1px solid #D5D8DF; border-radius: 12px; font-size: 15px; line-height: 21px"><span><b>Cortex Analyst</b><br><span style="color: #4A4F5C">natural language → SQL</span></span></div>
+<div style="position: absolute; left: 496px; top: 200px; width: 192px; height: 80px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #FFFFFF; border: 1px solid #D5D8DF; border-radius: 12px; font-size: 15px; line-height: 21px"><span><b>Cortex Agents</b><br><span style="color: #4A4F5C">Snowflake Intelligence</span></span></div>
+<div style="position: absolute; left: 712px; top: 200px; width: 192px; height: 80px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #FFFFFF; border: 1px solid #D5D8DF; border-radius: 12px; font-size: 15px; line-height: 21px"><span><b>Plain SQL</b><br><span style="color: #4A4F5C; font-family: 'JetBrains Mono', monospace; font-size: 13px">FROM SEMANTIC_VIEW()</span></span></div>
+
+<div style="position: absolute; left: 88px; top: 358px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 1.2px; color: #1E3F99">SEMANTIC LAYER · the architecture concept</div>
+<div style="position: absolute; left: 88px; top: 396px; width: 792px; height: 172px; box-sizing: border-box; padding: 20px 24px; display: flex; align-items: center; background: #FFFFFF; border: 2px solid #0F766E; border-radius: 12px; font-size: 15px; line-height: 24px"><span><b style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 20px; color: #0F766E">SEMANTIC VIEW</b>  <span style="color: #4A4F5C">· a native schema-level object</span><br><b>Logical tables · Relationships · Facts · Dimensions · Metrics</b> + synonyms &amp; descriptions<br>e.g. <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">total_ead = SUM(loans.ead)</span>, dimension <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">borrowers.segment</span><br><span style="color: #4A4F5C">Defined in SQL, YAML or Snowsight Semantic Studio · governed by RBAC like any view</span></span></div>
+
+<div style="position: absolute; left: 64px; top: 668px; width: 192px; height: 72px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #ECEDF0; border: 1px solid #C9CDD6; border-radius: 10px; font-size: 14px; line-height: 20px"><span><b style="font-family: 'JetBrains Mono', monospace">LOANS</b><br><span style="color: #4A4F5C">fact table</span></span></div>
+<div style="position: absolute; left: 280px; top: 668px; width: 192px; height: 72px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #ECEDF0; border: 1px solid #C9CDD6; border-radius: 10px; font-size: 14px; line-height: 20px"><span><b style="font-family: 'JetBrains Mono', monospace">BORROWERS</b><br><span style="color: #4A4F5C">dimension</span></span></div>
+<div style="position: absolute; left: 496px; top: 668px; width: 192px; height: 72px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #ECEDF0; border: 1px solid #C9CDD6; border-radius: 10px; font-size: 14px; line-height: 20px"><span><b style="font-family: 'JetBrains Mono', monospace">PAYMENTS</b><br><span style="color: #4A4F5C">fact table</span></span></div>
+<div style="position: absolute; left: 712px; top: 668px; width: 192px; height: 72px; box-sizing: border-box; padding: 12px 16px; display: flex; align-items: center; background: #ECEDF0; border: 1px solid #C9CDD6; border-radius: 10px; font-size: 14px; line-height: 20px"><span><b style="font-family: 'JetBrains Mono', monospace">COLLATERAL</b><br><span style="color: #4A4F5C">dimension</span></span></div>
+<div style="position: absolute; left: 64px; top: 756px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 1.2px; color: #4A4F5C">PHYSICAL TABLES · what's actually stored</div>
+
+<div style="position: absolute; left: 1000px; top: 172px; width: 376px; height: 172px; box-sizing: border-box; padding: 16px 20px; display: flex; align-items: center; background: #FFFFFF; border: 1px solid #D5D8DF; border-radius: 12px; font-size: 14px; line-height: 21px"><span><b>Native in Snowflake?</b><br><span style="color: #0F766E; font-weight: 600">Semantic view</span> — yes, a schema object<br><span style="color: #1E3F99; font-weight: 600">Semantic layer</span> — a pattern, not an object<br><span style="color: #8E2350; font-weight: 600">Taxonomy</span> — hierarchy tables and tags<br><span style="color: #B4530A; font-weight: 600">Ontology</span> — no object; model it yourself<br><span style="color: #6D3FC4; font-weight: 600">Knowledge graph</span> — tables or Native Apps</span></div>
+
+<div style="position: absolute; left: 1000px; top: 364px; width: 376px; height: 88px; box-sizing: border-box; padding: 14px 20px; display: flex; align-items: center; background: #FDF0F5; border: 2px solid #B8336A; border-radius: 12px; font-size: 14px; line-height: 21px"><span><b style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 18px; color: #8E2350">TAXONOMY</b> · the is-a tree<br>Party › Borrower › Retail · SME · Corporate</span></div>
+<div style="position: absolute; left: 1000px; top: 484px; width: 376px; height: 124px; box-sizing: border-box; padding: 16px 20px; display: flex; align-items: center; background: #FFF7EF; border: 2px solid #B4530A; border-radius: 12px; font-size: 14px; line-height: 21px"><span><b style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 18px; color: #B4530A">ONTOLOGY</b> · what things mean<br>Borrower <i>is a</i> Party · Loan <i>securedBy</i> Collateral · Guarantor <i>guarantees</i> Loan<br><span style="color: #4A4F5C">OWL/RDF, YAML, catalog tags, OSI</span></span></div>
+<div style="position: absolute; left: 1000px; top: 668px; width: 376px; height: 152px; box-sizing: border-box; padding: 16px 20px; display: flex; align-items: center; background: #F5F1FD; border: 2px solid #6D3FC4; border-radius: 12px; font-size: 14px; line-height: 21px"><span><b style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 18px; color: #6D3FC4">KNOWLEDGE GRAPH</b> · ontology + real data<br><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">Acme Corp —hasLoan→ L-1001 —securedBy→ Warehouse 7</span><br><span style="color: #4A4F5C">Node/edge tables, or RelationalAI / Neo4j Native Apps</span></span></div>
+
+<div style="position: absolute; left: 904px; top: 518px; width: 72px; text-align: center; font-size: 13px; line-height: 16px; color: #8A3F06">informs</div>
+<div style="position: absolute; left: 1200px; top: 460px; width: 96px; font-size: 13px; line-height: 16px; color: #8E2350">backbone of</div>
+<div style="position: absolute; left: 1200px; top: 629px; width: 88px; font-size: 13px; line-height: 16px; color: #5A30A8">schema for</div>
+<div style="position: absolute; left: 912px; top: 716px; width: 80px; text-align: center; font-size: 13px; line-height: 16px; color: #5A30A8">instances</div>
+
+</div>
+</div></section>
+<section class="board" id="b2"><div class="cap"><span>2 / 3</span> Side-by-side comparison</div><div class="frame">
+<div style="width: 1440px; min-height: 1300px; box-sizing: border-box; padding: 56px 64px 64px; background: #F6F6F3; font-family: Inter, system-ui, sans-serif; color: #16181D; display: flex; flex-direction: column; gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: -0.5px">Side by side</h1>
+<p style="margin: 0; font-size: 17px; line-height: 26px; color: #4A4F5C; max-width: 1000px">Two are about <b>analytics</b> (consistent numbers), three are about <b>meaning and connections</b>. They complement each other more than they compete.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 132px repeat(5, minmax(0, 1fr)); gap: 10px; font-size: 14px; line-height: 21px">
+
+<div></div>
+<div style="background: #2F5BD3; color: #FFFFFF; border-radius: 12px 12px 4px 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; letter-spacing: 1.2px; font-weight: 600; color: #DCE6FB">ARCHITECTURE PATTERN</span><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">Semantic layer</span></div>
+<div style="background: #0F766E; color: #FFFFFF; border-radius: 12px 12px 4px 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; letter-spacing: 1.2px; font-weight: 600; color: #D3F2EE">SNOWFLAKE OBJECT</span><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">Semantic view</span></div>
+<div style="background: #B8336A; color: #FFFFFF; border-radius: 12px 12px 4px 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; letter-spacing: 1.2px; font-weight: 600; color: #FCE1EC">CLASSIFICATION</span><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">Taxonomy</span></div>
+<div style="background: #B4530A; color: #FFFFFF; border-radius: 12px 12px 4px 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; letter-spacing: 1.2px; font-weight: 600; color: #FFE8D4">CONCEPTUAL MODEL</span><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">Ontology</span></div>
+<div style="background: #6D3FC4; color: #FFFFFF; border-radius: 12px 12px 4px 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; letter-spacing: 1.2px; font-weight: 600; color: #EBE2FB">DATA STRUCTURE</span><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">Knowledge graph</span></div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">IN ONE LINE</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">A layer between tables and consumers that turns columns into business terms and governed metrics.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Snowflake's native object that stores a semantic model right next to the data.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">A tree that sorts things into categories and sub-categories. One kind of link: broader to narrower.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">A formal model of what things in a domain <i>are</i> and how they relate, independent of storage.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Real entities and their links, stored as nodes and edges and shaped by an ontology.</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">TYPICAL QUESTION</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">“Does every dashboard and agent compute <i>net charge-off rate</i> the same way?”</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">“Total exposure at default by segment and month.”</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">“Is a revolver a kind of loan? What does SME roll up to?”</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">“Is a guarantor a party? Can one facility hold many loans?”</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">“Which borrowers connect to Acme via guarantees or shared directors?”</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">BUILDING BLOCKS</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Entities, joins, dimensions, measures/metrics, access rules.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 20px">TABLES · RELATIONSHIPS · FACTS · DIMENSIONS · METRICS<br><span style="font-family: Inter, sans-serif; font-size: 14px">+ synonyms, comments, sample values</span></div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Terms, parent-child links, levels. Nothing else.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Classes, properties, relationships, <i>is-a</i> hierarchies, constraints and rules.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Nodes, edges, properties, with the ontology as schema.</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">IN SNOWFLAKE</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Implemented natively by semantic views, or by dbt Semantic Layer, AtScale, Cube, LookML on top of Snowflake.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px">CREATE SEMANTIC VIEW</span>, YAML spec, or Snowsight Semantic Studio. Granted and versioned like other objects.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">No dedicated object. Parent-child tables, level columns used as dimensions, and tags for classifying data.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">No native object. Kept as OWL/RDF or YAML, in catalog descriptions and tags, or in RelationalAI models. OSI aims to make semantics portable.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Node and edge tables with recursive CTEs, or Native Apps such as RelationalAI and Neo4j Graph Analytics.</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">QUERIED WITH</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Whatever the layer exposes: SQL, BI connectors, APIs, natural language.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px">SEMANTIC_VIEW()</span> in SQL, Cortex Analyst, Cortex Agents, BI tools that read it.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Recursive SQL to walk the tree, or flattened level columns for roll-ups and drill-downs.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Rarely queried directly; SPARQL or reasoners outside Snowflake, or through the graph built on it.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Recursive SQL, Cypher, graph algorithms (PageRank, communities), GraphRAG.</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">BEST FOR</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">One definition of each KPI across BI, apps and AI.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Accurate text-to-SQL and governed self-serve analytics.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Consistent categories, roll-ups, navigation and tagging.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Shared vocabulary across systems; grounding AI agents in business meaning.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Multi-hop questions: connected exposure, fraud rings, lineage, entity resolution.</div>
+
+<div style="padding: 14px 4px; font-weight: 600; font-size: 13px; letter-spacing: 0.6px; color: #4A4F5C">WATCH OUT</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Several competing layers bring metric drift right back.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Built for star/snowflake schemas and aggregation, not inference, hierarchies or rules.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Can't say how unlike things relate, such as a loan and its collateral. That takes an ontology.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Easy to over-engineer, and it holds no data by itself.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 4px; padding: 14px 16px">Weak at “sum by month” aggregates; that's the semantic view's job.</div>
+
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px 24px; font-size: 15px; line-height: 23px"><b>Layer ⊃ View.</b> A semantic view is one way to build a semantic layer; the layer is the goal, the view is Snowflake's native tool for it.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px 24px; font-size: 15px; line-height: 23px"><b>Taxonomy ⊂ Ontology.</b> A taxonomy is only the is-a tree; an ontology keeps that tree and adds every other relationship plus the rules.</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px 24px; font-size: 15px; line-height: 23px"><b>Ontology + data = Knowledge graph.</b> The ontology is the schema of meaning; the graph fills it with your actual borrowers, loans and links.</div>
+</div>
+</div>
+</div></section>
+<section class="board" id="b3"><div class="cap"><span>3 / 3</span> Mental model, SQL and when to use</div><div class="frame">
+<div style="width: 1440px; min-height: 1160px; box-sizing: border-box; padding: 56px 64px 64px; background: #F6F6F3; font-family: Inter, system-ui, sans-serif; color: #16181D; display: flex; flex-direction: column; gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: -0.5px">Mental model, real SQL, and when to reach for each</h1>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="grid-column: span 2; background: #FDF0F5; border: 2px solid #B8336A; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #8E2350">TAXONOMY</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; line-height: 32px; font-weight: 700">The table of contents</span>
+<p style="margin: 0; font-size: 15px; line-height: 23px; color: #33363F">Files every term under a broader one: Corporate under Borrower under Party. It tells you where something sits, not how it relates to anything else.</p>
+</div>
+<div style="background: #FFF7EF; border: 2px solid #B4530A; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #8A3F06">ONTOLOGY</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; line-height: 32px; font-weight: 700">The dictionary</span>
+<p style="margin: 0; font-size: 15px; line-height: 23px; color: #33363F">Takes the tree and adds relationships and rules. “A borrower is a party. A loan must have exactly one borrower.” Holds no rows.</p>
+</div>
+<div style="background: #F5F1FD; border: 2px solid #6D3FC4; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #5A30A8">KNOWLEDGE GRAPH</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; line-height: 32px; font-weight: 700">The map</span>
+<p style="margin: 0; font-size: 15px; line-height: 23px; color: #33363F">Who is actually connected to whom, written in the dictionary's words. Great at following paths.</p>
+</div>
+<div style="background: #EAF0FB; border: 2px solid #2F5BD3; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #1E3F99">SEMANTIC LAYER</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; line-height: 32px; font-weight: 700">The contract</span>
+<p style="margin: 0; font-size: 15px; line-height: 23px; color: #33363F">An agreement that “exposure” means one formula, whoever asks: a dashboard, an app or an agent.</p>
+</div>
+<div style="background: #E8F5F3; border: 2px solid #0F766E; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #0B5A54">SEMANTIC VIEW</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; line-height: 32px; font-weight: 700">The signed copy</span>
+<p style="margin: 0; font-size: 15px; line-height: 23px; color: #33363F">That contract stored as a Snowflake object, so SQL, Cortex Analyst and BI all read the same thing.</p>
+</div>
+</div>
+
+<div style="background: #16181D; border-radius: 14px; padding: 24px 26px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: #9FE3D9">SEMANTIC VIEW · LENDING EXAMPLE</span>
+<pre style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 20px; color: #E8E9EC; white-space: pre-wrap">CREATE OR REPLACE SEMANTIC VIEW risk.sem.lending_sv
+  TABLES (
+    loans     AS risk.core.loans     PRIMARY KEY (loan_id),
+    borrowers AS risk.core.borrowers PRIMARY KEY (borrower_id)
+      WITH SYNONYMS ('obligor', 'customer')
+  )
+  RELATIONSHIPS (
+    loan_to_borrower AS loans (borrower_id) REFERENCES borrowers
+  )
+  FACTS (
+    loans.ead AS exposure_at_default
+  )
+  DIMENSIONS (
+    borrowers.segment   AS segment,
+    loans.orig_month    AS DATE_TRUNC('month', origination_date)
+  )
+  METRICS (
+    loans.total_ead     AS SUM(loans.ead),
+    loans.loan_count    AS COUNT(loans.loan_id)
+  );
+
+-- query it like a table function
+SELECT * FROM SEMANTIC_VIEW(
+  risk.sem.lending_sv
+  DIMENSIONS borrowers.segment
+  METRICS    loans.total_ead
+);</pre>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 24px; line-height: 32px; font-weight: 700">Which one do I need?</h2>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px">
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 22px; color: #33363F">“I want the same KPI everywhere and accurate natural-language questions on my star schema.”</span>
+<span style="font-weight: 600; color: #0F766E">→ Start with a semantic view</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 22px; color: #33363F">“Metrics live in dbt or Looker and must serve many engines, not just Snowflake.”</span>
+<span style="font-weight: 600; color: #1E3F99">→ A cross-tool semantic layer (OSI helps keep them in sync)</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 22px; color: #33363F">“We need one agreed list of segments and product types that rolls up cleanly.”</span>
+<span style="font-weight: 600; color: #8E2350">→ A taxonomy is enough</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 22px; color: #33363F">“Teams and agents disagree on what a customer, facility or default even is.”</span>
+<span style="font-weight: 600; color: #8A3F06">→ Agree an ontology first, then generate views from it</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 22px; color: #33363F">“I need to follow chains: guarantors of guarantors, shared directors, linked collateral.”</span>
+<span style="font-weight: 600; color: #5A30A8">→ A knowledge graph on top of the same tables</span>
+</div>
+</div>
+</div>
+</div>
+</div></section>
+<script>
+function fit(){var z=Math.min(1,(document.documentElement.clientWidth-48)/1440);document.documentElement.style.setProperty('--z',z);document.documentElement.style.setProperty('--w',(1440*z)+'px');}
+fit();window.addEventListener('resize',fit);
+</script>
+</body>
+</html>
